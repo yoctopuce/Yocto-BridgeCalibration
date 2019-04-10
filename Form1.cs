@@ -63,7 +63,8 @@ namespace Yocto_BridgeCalibration
         private void Form1_Resize(object sender, EventArgs e)
         {
             GenericResize();
-            PanelDesc.Panel(CurrentStep).resize();
+            PanelDesc d = PanelDesc.Panel(CurrentStep);
+            if (d != null) d.resize();
         }
 
     private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -73,53 +74,56 @@ namespace Yocto_BridgeCalibration
   }
 
   public class PanelDesc
+  {
+    private WizardSteps _step;
+    private PanelActionResize _resize;
+    private PanelActionClearContents _clearContents;
+    private PanelActionDrawContents _drawContents;
+    private PanelActionNextClicked _nextClicked;
+
+    public delegate void PanelActionResize();
+    public delegate void PanelActionClearContents();
+    public delegate void PanelActionDrawContents();
+    public delegate WizardSteps PanelActionNextClicked();
+
+    static Dictionary<WizardSteps, PanelDesc> _panels = new Dictionary<WizardSteps, PanelDesc>();
+
+
+    public enum WizardSteps
     {
-        private WizardSteps _step;
-        private PanelActionResize _resize;
-        private PanelActionClearContents _clearContents;
-        private PanelActionDrawContents _drawContents;
-        private PanelActionNextClicked _nextClicked;
-
-        public delegate void PanelActionResize();
-        public delegate void PanelActionClearContents();
-        public delegate void PanelActionDrawContents();
-        public delegate WizardSteps PanelActionNextClicked();
-
-        static Dictionary<WizardSteps, PanelDesc> _panels = new Dictionary<WizardSteps, PanelDesc>();
-
-
-        public enum WizardSteps
-        {
-            ERROR, WELCOME, CHOOSESENSOR, RESETWARNNG, CHOOSEEXCITATION, CLEARLOAD, REFWEIGHT,
-            REMOVEREFLOAD, READY4TEMPCOMPENS, DEVICEDISCONNECTED, MONITORDATA, DATASOURCE,
-            DATALOADING, DOYOURTHING, CONFIRMCOMPENSATION , COMPENSATIONDONE
+      ERROR, WELCOME, CHOOSESENSOR, RESETWARNNG, CHOOSEEXCITATION, CLEARLOAD, REFWEIGHT,
+      REMOVEREFLOAD, READY4TEMPCOMPENS, DEVICEDISCONNECTED, MONITORDATA, DATASOURCE,
+      DATALOADING, DOYOURTHING, CONFIRMCOMPENSATION, COMPENSATIONDONE
 
     }
 
 
-        public PanelDesc(WizardSteps step, PanelActionResize resize,
-                         PanelActionDrawContents drawContents,
-                         PanelActionClearContents clear,
-                         PanelActionNextClicked nextClicked)
-        {
-            _step = step;
-            _resize = resize;
-            _clearContents = clear;
-            _drawContents = drawContents;
-            _nextClicked = nextClicked;
-            _panels[step] = this;
-
-        }
-
-        public WizardSteps step { get { return _step; } }
-        public PanelActionResize resize { get { return _resize; } }
-        public PanelActionClearContents clearContents { get { return _clearContents; } }
-        public PanelActionDrawContents drawContents { get { return _drawContents; } }
-        public PanelActionNextClicked nextClicked { get { return _nextClicked; } }
-        public static PanelDesc Panel(WizardSteps step) { return _panels[step]; }
-
-
+    public PanelDesc(WizardSteps step, PanelActionResize resize,
+                     PanelActionDrawContents drawContents,
+                     PanelActionClearContents clear,
+                     PanelActionNextClicked nextClicked)
+    {
+      _step = step;
+      _resize = resize;
+      _clearContents = clear;
+      _drawContents = drawContents;
+      _nextClicked = nextClicked;
+      _panels[step] = this;
 
     }
+
+    public WizardSteps step { get { return _step; } }
+    public PanelActionResize resize { get { return _resize; } }
+    public PanelActionClearContents clearContents { get { return _clearContents; } }
+    public PanelActionDrawContents drawContents { get { return _drawContents; } }
+    public PanelActionNextClicked nextClicked { get { return _nextClicked; } }
+    public static PanelDesc Panel(WizardSteps step)
+    {
+      if (_panels.Count <= 0) return null;
+      return _panels[step]; }
+    }
+
+
+    
 
 }

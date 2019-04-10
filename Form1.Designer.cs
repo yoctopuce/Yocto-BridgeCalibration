@@ -172,8 +172,8 @@ namespace Yocto_BridgeCalibration
 
         public void GenericResize()
         {
-            this.NextButton.Location = new System.Drawing.Point(ClientSize.Width - NextButton.Size.Width - 5, ClientSize.Height - NextButton.Height - 5);
-            this.PrevButton.Location = new System.Drawing.Point(NextButton.Left - PrevButton.Width - 5, ClientSize.Height - PrevButton.Height - 5);         
+          if (this.NextButton != null)  this.NextButton.Location = new System.Drawing.Point(ClientSize.Width - NextButton.Size.Width - 5, ClientSize.Height - NextButton.Height - 5);
+          if (this.PrevButton != null) this.PrevButton.Location = new System.Drawing.Point(NextButton.Left - PrevButton.Width - 5, ClientSize.Height - PrevButton.Height - 5);         
         }
 
         private System.Windows.Forms.SaveFileDialog ExportFileDialog1;

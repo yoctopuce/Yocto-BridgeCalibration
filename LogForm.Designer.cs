@@ -1,4 +1,6 @@
-﻿namespace Yocto_BridgeCalibration
+﻿using System.Drawing;
+
+namespace Yocto_BridgeCalibration
 {
   partial class LogForm
   {
@@ -30,6 +32,8 @@
     {
       System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LogForm));
       this.textBox1 = new System.Windows.Forms.TextBox();
+      if (constants.MonoRunning) this.textBox1.BackColor = Color.White;
+          
       this.SuspendLayout();
       // 
       // textBox1

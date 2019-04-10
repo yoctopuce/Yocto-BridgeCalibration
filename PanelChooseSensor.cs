@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Yocto_BridgeCalibration
@@ -45,7 +45,10 @@ namespace Yocto_BridgeCalibration
       RadioBtUSB.Location = new System.Drawing.Point((ClientSize.Width - w) / 2, ChooseSensorMainMenuTitle.Top + 45);
       RadioBtVirtualHub.Location = new System.Drawing.Point((ClientSize.Width - w) / 2, RadioBtUSB.Top + 30);
       RadioBtRemote.Location = new System.Drawing.Point((ClientSize.Width - w) / 2, RadioBtVirtualHub.Top + 30);
-      DeviceAddr.Location = new System.Drawing.Point(RadioBtRemote.Left + RadioBtRemote.Width + 5, RadioBtRemote.Top);
+      if (constants.MonoRunning)
+        DeviceAddr.Location = new System.Drawing.Point(RadioBtRemote.Left + RadioBtRemote.Width + 50, RadioBtRemote.Top - 5);
+      else
+        DeviceAddr.Location = new System.Drawing.Point(RadioBtRemote.Left + RadioBtRemote.Width + 5, RadioBtRemote.Top);
       ChooseSensorErrorLabel.Location = new System.Drawing.Point(0, DeviceAddr.Top + 30);
       ChooseSensorErrorLabel.Size = new System.Drawing.Size(ClientSize.Width, 40);
       ChooseSensorTitle.Location = new System.Drawing.Point(0, ChooseSensorErrorLabel.Top + 40);
@@ -157,6 +160,7 @@ namespace Yocto_BridgeCalibration
       // DeviceAddr
       // 
       if (DeviceAddr == null) DeviceAddr = new System.Windows.Forms.TextBox();
+      
       DeviceAddr.Name = "DeviceAddr";
       DeviceAddr.Size = new System.Drawing.Size(100, 20);
       DeviceAddr.Text = CurrentConnectionAddr;
@@ -216,6 +220,9 @@ namespace Yocto_BridgeCalibration
     private void RadioBtRemote_CheckedChanged(object sender, EventArgs e)
     {
       DeviceAddr.Enabled = RadioBtRemote.Checked;
+      if (constants.MonoRunning)
+        DeviceAddr.BackColor = DeviceAddr.Enabled ? Color.White : SystemColors.Control;
+
     }
 
     private void DeviceAddr_TextChanged(object sender, EventArgs e)

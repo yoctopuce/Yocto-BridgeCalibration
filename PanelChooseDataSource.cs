@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Drawing;
 using System.IO;
 
 using System.Windows.Forms;
@@ -110,6 +110,7 @@ namespace Yocto_BridgeCalibration
       // file name
       //
       if (FilenameInput == null) FilenameInput = new System.Windows.Forms.TextBox();
+      if (constants.MonoRunning) FilenameInput.BackColor = Color.White;
       FilenameInput.Name = "FilenameInput";
       FilenameInput.Size = new System.Drawing.Size(300, 20);
      // FilenameInput.Text = "C:\\tmp\\6days.csv";

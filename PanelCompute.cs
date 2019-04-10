@@ -226,6 +226,7 @@ namespace Yocto_BridgeCalibration
       if (label1 == null) label1 = new Label();
       if (deltaRatioTrackBar == null) deltaRatioTrackBar = new TrackBar();
       if (deltaRatio == null) deltaRatio = new TextBox();
+      if (constants.MonoRunning) deltaRatio.BackColor = Color.White;
       if (label3 == null) label3 = new Label();
       if (groupBox2 == null) groupBox2 = new GroupBox();
       if (label8 == null) label8 = new Label();
@@ -233,6 +234,7 @@ namespace Yocto_BridgeCalibration
       if (label2 == null) label2 = new Label();
       if (label4 == null) label4 = new Label();
       if (avgRatio == null) avgRatio = new TextBox();
+      if (constants.MonoRunning) avgRatio.BackColor = Color.White;
       if (avgRatioTrackBar == null) avgRatioTrackBar = new TrackBar();
       if (label5 == null) label5 = new Label();
       if (showPrediction == null) showPrediction = new CheckBox();
@@ -241,6 +243,7 @@ namespace Yocto_BridgeCalibration
       if (groupBox3 == null) groupBox3 = new GroupBox();
       if (deriv == null) deriv = new CheckBox();
       if (logBox == null) logBox = new TextBox();
+      if (constants.MonoRunning) logBox.BackColor = Color.White;
       if (groupBox5 == null) groupBox5 = new GroupBox();
 
       if (groupBox8 == null) groupBox8 = new GroupBox();

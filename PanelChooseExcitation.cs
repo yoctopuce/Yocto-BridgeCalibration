@@ -1,4 +1,5 @@
 ﻿
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Yocto_BridgeCalibration
@@ -114,6 +115,7 @@ namespace Yocto_BridgeCalibration
       // ChooseUnitInput
       //
       if (ChooseUnitInput == null) ChooseUnitInput = new System.Windows.Forms.TextBox();
+      if (constants.MonoRunning) ChooseUnitInput.BackColor = Color.White;
       ChooseUnitInput.Name = "ChooseUnitInput";
       ChooseUnitInput.Size = new System.Drawing.Size(100, 20);
       ChooseUnitInput.Text = CurrentConnectionAddr;

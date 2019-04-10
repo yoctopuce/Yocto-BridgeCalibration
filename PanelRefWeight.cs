@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace Yocto_BridgeCalibration
@@ -111,6 +111,7 @@ namespace Yocto_BridgeCalibration
             if (RefWeightInput == null)
             {
                 RefWeightInput = new System.Windows.Forms.TextBox();
+                if (constants.MonoRunning) RefWeightInput.BackColor = Color.White;
                 RefWeightInput.Text = "";
             }
             RefWeightInput.Name = "RefWeightInput";
@@ -146,6 +147,7 @@ namespace Yocto_BridgeCalibration
             if (MaxWeightInput == null)
             {
                 MaxWeightInput = new System.Windows.Forms.TextBox();
+                if (constants.MonoRunning) MaxWeightInput.BackColor = Color.White;
                 MaxWeightInput.Text = "";
             }
             MaxWeightInput.Name = "RefWeightInput";
