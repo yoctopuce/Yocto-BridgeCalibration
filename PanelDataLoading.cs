@@ -142,8 +142,20 @@ namespace Yocto_BridgeCalibration
 
       if (tdata.Count == 0) { DataloggerError("No temperature data"); return; }
       if (wdata.Count == 0) { DataloggerError("No weight data"); return; }
-      if (wdata.Count != tdata.Count) { DataloggerError("Temperature and Weight don't have the same records count"); return; }
-      if (wdata[0].x != tdata[0].x) { DataloggerError("Temperature and Weight records don't same at the same time"); return; }
+
+
+
+      if (Math.Abs(wdata.Count - tdata.Count)>10)
+        { DataloggerError("Temperature and Weight record count difference is more than 10 records"); return; }
+      else
+        { if (wdata.Count != tdata.Count)
+           { while ((wdata.Count > 0) && (tdata.Count > 0) && (wdata[wdata.Count - 1].x > tdata[tdata.Count - 1].x)) wdata.RemoveAt(wdata.Count - 1);
+             while ((wdata.Count > 0) && (tdata.Count > 0) && (tdata[tdata.Count - 1].x > wdata[wdata.Count - 1].x)) tdata.RemoveAt(tdata.Count - 1);
+        }
+
+      }
+
+      if (wdata[0].x != tdata[0].x) { DataloggerError("Temperature and Weight records don't start at the same time"); return; }
 
 
       DataloadingMessage.Text = "Data loading completed";
