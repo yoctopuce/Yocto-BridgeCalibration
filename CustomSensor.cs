@@ -49,15 +49,17 @@ namespace Yocto_BridgeCalibration
 
     }
 
-    public void setCompensation(  List<double> deviceTempCompensationValues,
-         List<double> deviceOffsetChgCompensationValues,
-         List<double> deviceOffsetAvgCompensationValues)
+    public void setCompensation(double tempChgRatio, double tempAvgRatio,
+      List<double> deviceTempCompensationValues,
+      List<double> deviceOffsetChgCompensationValues,
+      List<double> deviceOffsetAvgCompensationValues)
     {
+      _sourceSensor.set_tempChgAdaptRatio(tempChgRatio);
+      _sourceSensor.set_tempAvgAdaptRatio(tempAvgRatio);
       _sourceSensor.set_offsetChgCompensationTable(deviceTempCompensationValues, deviceOffsetChgCompensationValues);
       _sourceSensor.set_offsetAvgCompensationTable(deviceTempCompensationValues,deviceOffsetAvgCompensationValues);
       _sourceSensor.get_module().saveToFlash();
-
-  }
+    }
 
     public CustomSensor(YWeighScale sourceSensor)
     {

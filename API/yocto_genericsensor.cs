@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_genericsensor.cs 33708 2018-12-14 14:17:39Z seb $
+ *  $Id: yocto_genericsensor.cs 35360 2019-05-09 09:02:29Z mvuilleu $
  *
  *  Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -47,6 +47,7 @@ using System.Text;
 using YDEV_DESCR = System.Int32;
 using YFUN_DESCR = System.Int32;
 
+ #pragma warning disable 1591
     //--- (YGenericSensor return codes)
     //--- (end of YGenericSensor return codes)
 //--- (YGenericSensor dlldef)
@@ -86,12 +87,16 @@ public class YGenericSensor : YSensor
     public const int SIGNALSAMPLING_LOW_NOISE_FILTERED = 3;
     public const int SIGNALSAMPLING_HIGHEST_RATE = 4;
     public const int SIGNALSAMPLING_INVALID = -1;
+    public const int ENABLED_FALSE = 0;
+    public const int ENABLED_TRUE = 1;
+    public const int ENABLED_INVALID = -1;
     protected double _signalValue = SIGNALVALUE_INVALID;
     protected string _signalUnit = SIGNALUNIT_INVALID;
     protected string _signalRange = SIGNALRANGE_INVALID;
     protected string _valueRange = VALUERANGE_INVALID;
     protected double _signalBias = SIGNALBIAS_INVALID;
     protected int _signalSampling = SIGNALSAMPLING_INVALID;
+    protected int _enabled = ENABLED_INVALID;
     protected ValueCallback _valueCallbackGenericSensor = null;
     protected TimedReportCallback _timedReportCallbackGenericSensor = null;
     //--- (end of YGenericSensor definitions)
@@ -131,6 +136,10 @@ public class YGenericSensor : YSensor
         if (json_val.has("signalSampling"))
         {
             _signalSampling = json_val.getInt("signalSampling");
+        }
+        if (json_val.has("enabled"))
+        {
+            _enabled = json_val.getInt("enabled") > 0 ? 1 : 0;
         }
         base._parseAttr(json_val);
     }
@@ -481,6 +490,69 @@ public class YGenericSensor : YSensor
 
     /**
      * <summary>
+     *   Returns the activation state of this input.
+     * <para>
+     * </para>
+     * <para>
+     * </para>
+     * </summary>
+     * <returns>
+     *   either <c>YGenericSensor.ENABLED_FALSE</c> or <c>YGenericSensor.ENABLED_TRUE</c>, according to the
+     *   activation state of this input
+     * </returns>
+     * <para>
+     *   On failure, throws an exception or returns <c>YGenericSensor.ENABLED_INVALID</c>.
+     * </para>
+     */
+    public int get_enabled()
+    {
+        int res;
+        lock (_thisLock) {
+            if (this._cacheExpiration <= YAPI.GetTickCount()) {
+                if (this.load(YAPI._yapiContext.GetCacheValidity()) != YAPI.SUCCESS) {
+                    return ENABLED_INVALID;
+                }
+            }
+            res = this._enabled;
+        }
+        return res;
+    }
+
+    /**
+     * <summary>
+     *   Changes the activation state of this input.
+     * <para>
+     *   When an input is disabled,
+     *   its value is no more updated. On some devices, disabling an input can
+     *   improve the refresh rate of the other active inputs.
+     * </para>
+     * <para>
+     * </para>
+     * </summary>
+     * <param name="newval">
+     *   either <c>YGenericSensor.ENABLED_FALSE</c> or <c>YGenericSensor.ENABLED_TRUE</c>, according to the
+     *   activation state of this input
+     * </param>
+     * <para>
+     * </para>
+     * <returns>
+     *   <c>YAPI.SUCCESS</c> if the call succeeds.
+     * </returns>
+     * <para>
+     *   On failure, throws an exception or returns a negative error code.
+     * </para>
+     */
+    public int set_enabled(int newval)
+    {
+        string rest_val;
+        lock (_thisLock) {
+            rest_val = (newval > 0 ? "1" : "0");
+            return _setAttr("enabled", rest_val);
+        }
+    }
+
+    /**
+     * <summary>
      *   Retrieves a generic sensor for a given identifier.
      * <para>
      *   The identifier can be specified using several formats:
@@ -729,3 +801,4 @@ public class YGenericSensor : YSensor
 
     //--- (end of YGenericSensor functions)
 }
+#pragma warning restore 1591

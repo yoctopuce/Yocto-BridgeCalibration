@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_temperature.cs 33708 2018-12-14 14:17:39Z seb $
+ *  $Id: yocto_temperature.cs 35462 2019-05-16 14:37:06Z seb $
  *
  *  Implements yFindTemperature(), the high-level API for Temperature functions
  *
@@ -47,6 +47,7 @@ using System.Text;
 using YDEV_DESCR = System.Int32;
 using YFUN_DESCR = System.Int32;
 
+ #pragma warning disable 1591
     //--- (YTemperature return codes)
     //--- (end of YTemperature return codes)
 //--- (YTemperature dlldef)
@@ -91,6 +92,7 @@ public class YTemperature : YSensor
     public const int SENSORTYPE_RES_LINEAR = 13;
     public const int SENSORTYPE_RES_INTERNAL = 14;
     public const int SENSORTYPE_IR = 15;
+    public const int SENSORTYPE_RES_PT1000 = 16;
     public const int SENSORTYPE_INVALID = -1;
     public const double SIGNALVALUE_INVALID = YAPI.INVALID_DOUBLE;
     public const string SIGNALUNIT_INVALID = YAPI.INVALID_STRING;
@@ -188,8 +190,8 @@ public class YTemperature : YSensor
      *   <c>YTemperature.SENSORTYPE_PT100_4WIRES</c>, <c>YTemperature.SENSORTYPE_PT100_3WIRES</c>,
      *   <c>YTemperature.SENSORTYPE_PT100_2WIRES</c>, <c>YTemperature.SENSORTYPE_RES_OHM</c>,
      *   <c>YTemperature.SENSORTYPE_RES_NTC</c>, <c>YTemperature.SENSORTYPE_RES_LINEAR</c>,
-     *   <c>YTemperature.SENSORTYPE_RES_INTERNAL</c> and <c>YTemperature.SENSORTYPE_IR</c> corresponding to
-     *   the temperature sensor type
+     *   <c>YTemperature.SENSORTYPE_RES_INTERNAL</c>, <c>YTemperature.SENSORTYPE_IR</c> and
+     *   <c>YTemperature.SENSORTYPE_RES_PT1000</c> corresponding to the temperature sensor type
      * </returns>
      * <para>
      *   On failure, throws an exception or returns <c>YTemperature.SENSORTYPE_INVALID</c>.
@@ -230,8 +232,8 @@ public class YTemperature : YSensor
      *   <c>YTemperature.SENSORTYPE_PT100_4WIRES</c>, <c>YTemperature.SENSORTYPE_PT100_3WIRES</c>,
      *   <c>YTemperature.SENSORTYPE_PT100_2WIRES</c>, <c>YTemperature.SENSORTYPE_RES_OHM</c>,
      *   <c>YTemperature.SENSORTYPE_RES_NTC</c>, <c>YTemperature.SENSORTYPE_RES_LINEAR</c>,
-     *   <c>YTemperature.SENSORTYPE_RES_INTERNAL</c> and <c>YTemperature.SENSORTYPE_IR</c> corresponding to
-     *   the temperature sensor type
+     *   <c>YTemperature.SENSORTYPE_RES_INTERNAL</c>, <c>YTemperature.SENSORTYPE_IR</c> and
+     *   <c>YTemperature.SENSORTYPE_RES_PT1000</c> corresponding to the temperature sensor type
      * </param>
      * <para>
      * </para>
@@ -642,7 +644,9 @@ public class YTemperature : YSensor
 
         id = this.get_functionId();
         id = (id).Substring( 11, (id).Length - 11);
-        if (id == "") id = "1";
+        if (id == "") {
+            id = "1";
+        }
         bin_json = this._download("extra.json?page="+id);
         paramlist = this._json_get_array(bin_json);
         // first convert all temperatures to float
@@ -757,3 +761,4 @@ public class YTemperature : YSensor
 
     //--- (end of YTemperature functions)
 }
+#pragma warning restore 1591

@@ -5,8 +5,12 @@ namespace Yocto_BridgeCalibration
 {
   partial class Form1
   {
-
     private Label ConfirmCompensationMessage1 = null;
+
+    private Label confirmTCRatioLabel = null;
+    private Label confirmTCRatioValue = null;
+    private Label confirmATRatioLabel = null;
+    private Label confirmATRatioValue = null;
 
     private Label confirmTableTemp = null;
     private Label confirmTableTempMinus30 = null;
@@ -30,41 +34,47 @@ namespace Yocto_BridgeCalibration
       ConfirmCompensationMessage1.Size = new System.Drawing.Size(600, 100);
       ConfirmCompensationMessage1.Location = new System.Drawing.Point((ClientSize.Width- ConfirmCompensationMessage1.Width) /2, (ClientSize.Height / 2)- ConfirmCompensationMessage1.Height-100);
 
-    
       int col1 = ClientSize.Width / 2 - 250;
       int col2 = ClientSize.Width / 2 - 50;
       int col3 = ClientSize.Width / 2 +150;
 
-      int row1 = ClientSize.Height / 2 -50;
+      int aboveTable = ClientSize.Height / 2 - 60;
+      int row1 = ClientSize.Height / 2;
       int row2 = row1 + 20; 
       int row3 = row2 + 20;
       int row4 = row3 + 20;
 
+      confirmTCRatioLabel.Location = new System.Drawing.Point(col1 + 25, aboveTable);
+      confirmTCRatioValue.Location = new System.Drawing.Point(col3, aboveTable);
+      confirmATRatioLabel.Location = new System.Drawing.Point(col1 + 25, aboveTable + 20);
+      confirmATRatioValue.Location = new System.Drawing.Point(col3, aboveTable + 20);
+
       confirmTableTemp.Location = new System.Drawing.Point(col1+25, row1); 
-     confirmTableTempMinus30.Location = new System.Drawing.Point(col1, row2);
-     confirmTableTempZero.Location = new System.Drawing.Point(col1, row3);
-     confirmTableTemp100.Location = new System.Drawing.Point(col1, row4);
+      confirmTableTempMinus30.Location = new System.Drawing.Point(col1, row2);
+      confirmTableTempZero.Location = new System.Drawing.Point(col1, row3);
+      confirmTableTemp100.Location = new System.Drawing.Point(col1, row4);
 
-     confirmTableTCC.Location = new System.Drawing.Point(col2, row1);
-     confirmTableTCCMinus30.Location = new System.Drawing.Point(col2, row2);
-     confirmTableTCCZero.Location = new System.Drawing.Point(col2, row3);
-     confirmTableTCC100.Location = new System.Drawing.Point(col2, row4);
+      confirmTableTCC.Location = new System.Drawing.Point(col2, row1);
+      confirmTableTCCMinus30.Location = new System.Drawing.Point(col2, row2);
+      confirmTableTCCZero.Location = new System.Drawing.Point(col2, row3);
+      confirmTableTCC100.Location = new System.Drawing.Point(col2, row4);
 
-     confirmTableATC.Location = new System.Drawing.Point(col3, row1);
-     confirmTableATCMinus30.Location = new System.Drawing.Point(col3, row2);
-     confirmTableATCZero.Location = new System.Drawing.Point(col3, row3);
-     confirmTableATC100.Location = new System.Drawing.Point(col3, row4);
+      confirmTableATC.Location = new System.Drawing.Point(col3, row1);
+      confirmTableATCMinus30.Location = new System.Drawing.Point(col3, row2);
+      confirmTableATCZero.Location = new System.Drawing.Point(col3, row3);
+      confirmTableATC100.Location = new System.Drawing.Point(col3, row4);
 
       confirmTableClickNext.Size = new System.Drawing.Size(600, 30);
       confirmTableClickNext.Location = new System.Drawing.Point((ClientSize.Width - confirmTableClickNext.Width) / 2, confirmTableATC100.Bottom+50);
-
-
-
     }
 
     public void ConfirmCompensationPanelClearContents()
     {
       Controls.Remove(ConfirmCompensationMessage1);
+      Controls.Remove(confirmTCRatioLabel);
+      Controls.Remove(confirmTCRatioValue);
+      Controls.Remove(confirmATRatioLabel);
+      Controls.Remove(confirmATRatioValue);
       Controls.Remove(confirmTableTemp);
       Controls.Remove(confirmTableTempMinus30);
       Controls.Remove(confirmTableTempZero);
@@ -93,20 +103,62 @@ namespace Yocto_BridgeCalibration
       ConfirmCompensationMessage1.TabIndex = tabIndex++;
       ConfirmCompensationMessage1.TextAlign= System.Drawing.ContentAlignment.MiddleCenter;
       ConfirmCompensationMessage1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-      ConfirmCompensationMessage1.Text = "You are about to inject the following compensation table in the sensor "+ChoosedWeighScale.ToString();
-    
+      ConfirmCompensationMessage1.Text = "You are about to inject the following compensation table in the sensor "+ChoosedWeighScale.ToString();    
       Controls.Add(ConfirmCompensationMessage1);
 
-  
+      if (confirmTCRatioLabel == null) confirmTCRatioLabel = new System.Windows.Forms.Label();
+      confirmTCRatioLabel.Name = "confirmTCRatioLabel";
+      confirmTCRatioLabel.TabIndex = tabIndex++;
+      confirmTCRatioLabel.AutoSize = true;
+      confirmTCRatioLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      confirmTCRatioLabel.Text = "Temperature change thermal inertia (‰):";
+      Controls.Add(confirmTCRatioLabel);
+
+      if (confirmTCRatioValue == null) confirmTCRatioValue = new System.Windows.Forms.Label();
+      confirmTCRatioValue.Name = "confirmTCRatioValue";
+      confirmTCRatioValue.TabIndex = tabIndex++;
+      confirmTCRatioValue.AutoSize = false;
+      confirmTCRatioValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+      confirmTCRatioValue.Width = 80;
+      confirmTCRatioValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      confirmTCRatioValue.Text = deltaRatio.Text;
+      Controls.Add(confirmTCRatioValue);
+
+      if (confirmATRatioLabel == null) confirmATRatioLabel = new System.Windows.Forms.Label();
+      confirmATRatioLabel.Name = "confirmATRatioLabel";
+      confirmATRatioLabel.TabIndex = tabIndex++;
+      confirmATRatioLabel.AutoSize = true;
+      confirmATRatioLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      confirmATRatioLabel.Text = "Average temperature thermal inertia (‰):";
+      Controls.Add(confirmATRatioLabel);
+
+      if (confirmATRatioValue == null) confirmATRatioValue = new System.Windows.Forms.Label();
+      confirmATRatioValue.Name = "confirmATRatioValue";
+      confirmATRatioValue.TabIndex = tabIndex++;
+      confirmATRatioValue.AutoSize = false;
+      confirmATRatioValue.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+      confirmATRatioValue.Width = 80;
+      confirmATRatioValue.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      confirmATRatioValue.Text = avgRatio.Text;
+      Controls.Add(confirmATRatioValue);
 
       if (confirmTableTemp == null) confirmTableTemp = new System.Windows.Forms.Label();
       confirmTableTemp.Name = "confirmTableTemp";
       confirmTableTemp.TabIndex = tabIndex++;
-
       confirmTableTemp.AutoSize = true;
       confirmTableTemp.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
       confirmTableTemp.Text = label10.Text;
       Controls.Add(confirmTableTemp);
+
+      if (confirmTableTempMinus30 == null) confirmTableTempMinus30 = new System.Windows.Forms.Label();
+      confirmTableTempMinus30.Name = "confirmTableTempMinus30";
+      confirmTableTempMinus30.AutoSize = false;
+      confirmTableTempMinus30.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+      confirmTableTempMinus30.Width = 100;
+      confirmTableTempMinus30.TabIndex = tabIndex++;
+      confirmTableTempMinus30.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+      confirmTableTempMinus30.Text = label11.Text;
+      Controls.Add(confirmTableTempMinus30);
 
       if (confirmTableTempMinus30 == null)  confirmTableTempMinus30 = new System.Windows.Forms.Label();
       confirmTableTempMinus30.Name = "confirmTableTempMinus30";
@@ -235,7 +287,11 @@ namespace Yocto_BridgeCalibration
 
     private PanelDesc.WizardSteps ConfirmCompensationNextClicked()
     {
-      ChoosedWeighScale.setCompensation(deviceTempCompensationValues, deviceOffsetChgCompensationValues, deviceOffsetAvgCompensationValues);
+      double deltaRatioNum, avgRatioNum;
+      System.Double.TryParse(deltaRatio.Text, out deltaRatioNum);
+      System.Double.TryParse(avgRatio.Text, out avgRatioNum);
+      ChoosedWeighScale.setCompensation(deltaRatioNum, avgRatioNum,
+        deviceTempCompensationValues, deviceOffsetChgCompensationValues, deviceOffsetAvgCompensationValues);
 
       return PanelDesc.WizardSteps.COMPENSATIONDONE;
     }
