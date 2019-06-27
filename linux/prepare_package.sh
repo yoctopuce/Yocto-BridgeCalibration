@@ -89,6 +89,8 @@ cp ../libyapi-armhf.so yoctobridgecalibration/usr/lib/Yocto-BridgeCalibration/li
 chmod 0644 yoctobridgecalibration/usr/lib/Yocto-BridgeCalibration/libyapi-armhf.so
 cp ../libyapi-i386.so yoctobridgecalibration/usr/lib/Yocto-BridgeCalibration
 chmod 0644 yoctobridgecalibration/usr/lib/Yocto-BridgeCalibration/libyapi-i386.so
+cp ../libyapi-aarch64.so yoctobridgecalibration/usr/lib/Yocto-BridgeCalibration
+chmod 0644 yoctobridgecalibration/usr/lib/Yocto-BridgeCalibration/libyapi-aarch64.so
 
 #copy binary
 cp  ../bin/Release/YoctoBridgeCalibration.exe yoctobridgecalibration/usr/lib/Yocto-BridgeCalibration
