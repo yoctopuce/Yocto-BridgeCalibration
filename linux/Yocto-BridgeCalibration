@@ -1,2 +1,3 @@
 #!/bin/bash
+cd /usr/lib/Yocto-BridgeCalibration/
 exec mono /usr/lib/Yocto-BridgeCalibration/YoctoBridgeCalibration.exe
