@@ -56,7 +56,7 @@ namespace Yocto_BridgeCalibration
   class constants
   {
 
-    public static string buildVersion = "37796";
+    public static string buildVersion = "38155";
     private static string _configfile = Path.Combine(Application.UserAppDataPath, "config.xml");
     private static bool _configfileOveridden = false;
     public static int MAXRAWDATAROWS = 2000;
