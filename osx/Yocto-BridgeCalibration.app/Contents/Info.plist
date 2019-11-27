@@ -1,26 +1,81 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>CFBundleName</key>
-	<string>yoctobridgecalibration</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.yoctopuce.yoctobridgecalibration</string>
-	<key>CFBundleVersion</key>
-	<string>1.0.38168</string>
-	<key>CFBundleShortVersionString</key>
-	<string>1.0.38168</string>
-	<key>CFBundleGetInfoString</key>
-	<string>Yocto-BridgeCalibration</string>
-	<key>NSHumanReadableCopyright</key>
-	<string>Copyright 2018 Yoctopuce Sarl</string>
-	<key>CFBundleExecutable</key>
-	<string>YoctoBridgeCalibration.sh</string>
-	<key>CFBundleIconFile</key>
-	<string>YoctoBridgeCalibration.icns</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-</dict>
-</plist>
+<?xml version="1.0"  encoding='windows-1252'?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+	xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension">
+	<Product Id="a8533bed-10f0-11ea-a097-ac220b5260e3"
+		Name="Yocto-BridgeCalibration"
+		Version="1.0.38532"
+		Manufacturer="Yoctopuce"
+		UpgradeCode="BC33CDCE-A2B3-4CC2-AD75-FF82E7D3FD63"
+		Language='1033' Codepage='1252'>
+
+		<Package Id='*' Keywords='Installer' Description="Yocto-BridgeCalibration Installer"
+			Comments='Installer for Yocto-BridgeCalibration 2.0.38532' Manufacturer='Yoctopuce'
+			InstallerVersion='100' Compressed='yes'  />
+
+      <Property Id="ARPHELPLINK" Value="https://www.yoctopuce.com)" />
+      <Property Id="ARPNOREPAIR" Value="yes" Secure="yes" />      <!-- Remove repair -->
+	  	<PropertyRef Id="WIX_IS_NETFRAMEWORK_45_OR_LATER_INSTALLED"/>
+
+		<Condition Message="This application requires .NET Framework 4.5. Please install the .NET Framework then run this installer again.">
+			<![CDATA[Installed OR WIX_IS_NETFRAMEWORK_45_OR_LATER_INSTALLED]]>
+		</Condition>
+
+		<MajorUpgrade
+		  DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit." />
+
+		<Media Id="1" Cabinet="product.cab" EmbedCab="yes"/>
+
+		<Directory Id="TARGETDIR" Name="SourceDir" >
+			<Directory Id="ProgramFilesFolder" Name="PFiles">
+				<Directory Id="Yoctopuce" Name="Yoctopuce">
+					<Directory Id="INSTALLDIR" Name="YoctoBridgeCalibration">
+						<Component Id="MainExecutable" Guid="*">
+							<File Id="YoctoBridgeCalibration_exe" Name="YoctoBridgeCalibration.exe" Source="bin\Release\YoctoBridgeCalibration.exe" KeyPath="yes">
+								<Shortcut Id="startmenuYoctoVisu" Directory="ProgramMenuDir" Name="Yocto-BridgeCalibration" WorkingDirectory='INSTALLDIR' Icon="YoctoBridgeCalibration.ico" IconIndex="0" Advertise="yes" />
+								<Shortcut Id="desktopYoctoVisu" Directory="DesktopFolder" Name="Yocto-BridgeCalibration" WorkingDirectory='INSTALLDIR' Icon="YoctoBridgeCalibration.ico" IconIndex="0" Advertise="yes" />
+							</File>
+						</Component>
+
+						<Component Id="yapi_dll"  Guid="*">
+							<File Id="yapi_dll" Name="yapi.dll" Source="bin\Release\yapi.dll" KeyPath="yes" />
+						</Component>
+						<Directory Id="amd64" Name="amd64">
+							<Component Id="yapi_dll_64"  Guid="*">
+								<File Id="yapi_dll_64" Name="yapi.dll" Source="bin\Release\amd64\yapi.dll" KeyPath="yes" />
+							</Component>
+						</Directory>
+					</Directory>
+				</Directory>
+			</Directory>
+			<Directory Id="ProgramMenuFolder" Name="Programs">
+				<Directory Id="ProgramMenuDir" Name="Yoctopuce">
+					<Component Id="ProgramMenuDir" Guid="*">
+						<RemoveFolder Id='ProgramMenuDir' On='uninstall' />
+						<RegistryValue Root='HKCU' Key='Software\[Manufacturer]\[ProductName]' Type='string' Value='' KeyPath='yes' />
+					</Component>
+				</Directory>
+			</Directory>
+			<Directory Id="DesktopFolder" Name="Desktop" />
+		</Directory>
+		<Feature Id='Complete' Level='1'>
+			<ComponentRef Id='MainExecutable' />
+			<ComponentRef Id='yapi_dll' />
+			<ComponentRef Id='yapi_dll_64' />
+
+			 <!-- Tell WiX to install the shortcut -->
+            <ComponentRef Id="ProgramMenuDir" />
+
+		</Feature>
+		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+
+		<WixVariable Id="WixUILicenseRtf" Value="License.rtf" />
+		<WixVariable Id="WixUIBannerBmp" Value="banner.bmp" />
+		<WixVariable Id="WixUIDialogBmp" Value="dialog.bmp" />
+
+		<UIRef Id="WixUI_InstallDir" />
+		<UIRef Id="WixUI_ErrorProgressText" />
+
+		<Property Id="ARPPRODUCTICON" Value="YoctoBridgeCalibration.ico" />
+		<Icon Id="YoctoBridgeCalibration.ico" SourceFile="main.ico" />
+	</Product>
+</Wix>
