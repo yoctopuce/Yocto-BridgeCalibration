@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_api.cs 38914 2019-12-20 19:14:33Z mvuilleu $
+ * $Id: yocto_api.cs 48277 2022-01-24 14:50:53Z seb $
  *
  * High-level programming interface, common to all modules
  *
@@ -43,6 +43,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Security;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -285,7 +286,14 @@ internal static class SafeNativeMethods
                 }
                 debugDll("try to load library using assembly directory("+dll_path+")");
                 try {
-                    IntPtr loadLibrary = NativeMethods.LoadLibrary(dll_path);
+                    IntPtr loadLibrary;
+#if NETCOREAPP3_0_OR_GREATER
+                    debugDll("use NativeLibrary.Load (.Net Core)");
+                    loadLibrary = NativeLibrary.Load(dll_path);
+#else
+                    debugDll("use NativeMethods.LoadLibrary (.Net Framework)");
+                    loadLibrary = NativeMethods.LoadLibrary(dll_path);
+#endif
                     if (loadLibrary == IntPtr.Zero) {
                         debugDll("Unable to preload dll with :" + dll_path);
                     } else {
@@ -293,6 +301,8 @@ internal static class SafeNativeMethods
                     }
                 } catch (System.EntryPointNotFoundException ex) {
                     debugDll("Entry point not found:"+ex.Message);
+                } catch (System.DllNotFoundException ex) {
+                    debugDll("Unable to load dll with :" + ex.Message);
                 }
             }
         }
@@ -2723,22 +2733,50 @@ internal static class SafeNativeMethods
                   return _yapiGetNetworkTimeoutLINAARCH64();
         }
     }
+    [DllImport("yapi", EntryPoint = "yapiAddUdevRulesForYocto", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+    private extern static int _yapiAddUdevRulesForYoctoWIN32(int force, StringBuilder errmsg);
+    [DllImport("amd64\\yapi.dll", EntryPoint = "yapiAddUdevRulesForYocto", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+    private extern static int _yapiAddUdevRulesForYoctoWIN64(int force, StringBuilder errmsg);
+    [DllImport("libyapi32", EntryPoint = "yapiAddUdevRulesForYocto", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+    private extern static int _yapiAddUdevRulesForYoctoMACOS32(int force, StringBuilder errmsg);
+    [DllImport("libyapi64", EntryPoint = "yapiAddUdevRulesForYocto", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+    private extern static int _yapiAddUdevRulesForYoctoMACOS64(int force, StringBuilder errmsg);
+    [DllImport("libyapi-amd64", EntryPoint = "yapiAddUdevRulesForYocto", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+    private extern static int _yapiAddUdevRulesForYoctoLIN64(int force, StringBuilder errmsg);
+    [DllImport("libyapi-i386", EntryPoint = "yapiAddUdevRulesForYocto", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+    private extern static int _yapiAddUdevRulesForYoctoLIN32(int force, StringBuilder errmsg);
+    [DllImport("libyapi-armhf", EntryPoint = "yapiAddUdevRulesForYocto", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+    private extern static int _yapiAddUdevRulesForYoctoLINARMHF(int force, StringBuilder errmsg);
+    [DllImport("libyapi-aarch64", EntryPoint = "yapiAddUdevRulesForYocto", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl, BestFitMapping = false, ThrowOnUnmappableChar = true)]
+    private extern static int _yapiAddUdevRulesForYoctoLINAARCH64(int force, StringBuilder errmsg);
+    internal static int _yapiAddUdevRulesForYocto(int force, StringBuilder errmsg)
+    {
+        switch (_dllVersion) {
+             default:
+             case YAPIDLL_VERSION.WIN32:
+                  return _yapiAddUdevRulesForYoctoWIN32(force, errmsg);
+             case YAPIDLL_VERSION.WIN64:
+                  return _yapiAddUdevRulesForYoctoWIN64(force, errmsg);
+             case YAPIDLL_VERSION.MACOS32:
+                  return _yapiAddUdevRulesForYoctoMACOS32(force, errmsg);
+             case YAPIDLL_VERSION.MACOS64:
+                  return _yapiAddUdevRulesForYoctoMACOS64(force, errmsg);
+             case YAPIDLL_VERSION.LIN64:
+                  return _yapiAddUdevRulesForYoctoLIN64(force, errmsg);
+             case YAPIDLL_VERSION.LIN32:
+                  return _yapiAddUdevRulesForYoctoLIN32(force, errmsg);
+             case YAPIDLL_VERSION.LINARMHF:
+                  return _yapiAddUdevRulesForYoctoLINARMHF(force, errmsg);
+             case YAPIDLL_VERSION.LINAARCH64:
+                  return _yapiAddUdevRulesForYoctoLINAARCH64(force, errmsg);
+        }
+    }
 //--- (end of generated code: YFunction dlldef)
 }
 
 
 public class YAPI
 {
-    public static Encoding DefaultEncoding = System.Text.Encoding.GetEncoding("iso-8859-1");
-
-    // Switch to turn off exceptions and use return codes instead, for source-code compatibility
-    // with languages without exception support like C
-    public static bool ExceptionsDisabled = false;
-
-    internal static Object globalLock = new Object();
-
-    static bool _apiInitialized = false;
-    internal static YAPIContext _yapiContext = new YAPIContext();
     public const string INVALID_STRING = "!INVALID!";
     public const double INVALID_DOUBLE = -1.79769313486231E+308;
     public const double MIN_DOUBLE = Double.MinValue;
@@ -2760,18 +2798,16 @@ public class YAPI
     public const int Y_RESEND_MISSING_PKT = 4;
     public const int Y_DETECT_ALL = Y_DETECT_USB | Y_DETECT_NET;
 
-
     public const int DETECT_NONE = 0;
     public const int DETECT_USB = 1;
     public const int DETECT_NET = 2;
     public const int RESEND_MISSING_PKT = 4;
     public const int DETECT_ALL = DETECT_USB | DETECT_NET;
 
-
     public const string YOCTO_API_VERSION_STR = "1.10";
     public const int YOCTO_API_VERSION_BCD = 0x0110;
 
-    public const string YOCTO_API_BUILD_NO = "39218";
+    public const string YOCTO_API_BUILD_NO = "48304";
     public const int YOCTO_DEFAULT_PORT = 4444;
     public const int YOCTO_VENDORID = 0x24e0;
     public const int YOCTO_DEVID_FACTORYBOOT = 1;
@@ -2799,9 +2835,7 @@ public class YAPI
 
     // Calibration types
     public const int YOCTO_CALIB_TYPE_OFS = 30;
-
     public const int yUnknowSize = 1024;
-
 
     // --- (generated code: YFunction return codes)
 // Yoctopuce error codes, used by default as function return value
@@ -2820,10 +2854,30 @@ public class YAPI
     public const int UNAUTHORIZED = -12;            // unauthorized access to password-protected device
     public const int RTC_NOT_READY = -13;           // real-time clock has not been initialized (or time was lost)
     public const int FILE_NOT_FOUND = -14;          // the file is not found
+    public const int SSL_ERROR = -15;               // Error reported by mbedSSL
     //--- (end of generated code: YFunction return codes)
 
+    /*
+     * All static global and persitent variables (NOT reset in YAPI.FreeAPI()
+     */
+    public static Encoding DefaultEncoding = System.Text.Encoding.GetEncoding("iso-8859-1");
+    public static bool ExceptionsDisabled = false;
+    internal static Object globalLock = new Object();
+    static bool _apiInitialized = false;
+    internal static YAPIContext _yapiContext = new YAPIContext();
 
+
+    /*
+     * All static variables (reset in YAPI.FreeAPI()
+     */
+    private static yLogFunc ylog = null;
+    private static yDeviceUpdateFunc yArrival = null;
+    private static yDeviceUpdateFunc yRemoval = null;
+    private static yDeviceUpdateFunc yChange = null;
+    private static YHubDiscoveryCallback _HubDiscoveryCallback = null;
     static List<YDevice> YDevice_devCache;
+    static List<PlugEvent> _PlugEvents;
+    static List<DataEvent> _DataEvents;
 
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -2860,12 +2914,6 @@ public class YAPI
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void _yapiDeviceLogCallback(YFUN_DESCR dev, IntPtr data);
 
-    // - Variables used to store public yocto_api callbacks
-    private static yLogFunc ylog = null;
-    private static yDeviceUpdateFunc yArrival = null;
-    private static yDeviceUpdateFunc yRemoval = null;
-    private static yDeviceUpdateFunc yChange = null;
-    private static YHubDiscoveryCallback _HubDiscoveryCallback = null;
 
     public static bool YISERR(YRETCODE retcode)
     {
@@ -4238,8 +4286,6 @@ public class YAPI
     }
 
 
-    static List<PlugEvent> _PlugEvents;
-    static List<DataEvent> _DataEvents;
 
     private static void native_HubDiscoveryCallback(IntPtr serial_ptr, IntPtr url_ptr)
     {
@@ -4270,6 +4316,11 @@ public class YAPI
     public static void RegisterHubDiscoveryCallback(YHubDiscoveryCallback hubDiscoveryCallback)
     {
         String errmsg = "";
+
+        if (!_apiInitialized)
+        {
+            InitAPI(0, ref errmsg);
+        }
         _HubDiscoveryCallback = hubDiscoveryCallback;
         TriggerHubDiscovery(ref errmsg);
     }
@@ -4406,15 +4457,6 @@ public class YAPI
             ev = new DataEvent(modul, beacon);
             _DataEvents.Add(ev);
         }
-    }
-
-
-    private static void queuesCleanUp()
-    {
-        _PlugEvents.Clear();
-        _PlugEvents = null;
-        _DataEvents.Clear();
-        _DataEvents = null;
     }
 
     private static void native_yFunctionUpdateCallback(YFUN_DESCR fundesc, IntPtr data)
@@ -4732,10 +4774,79 @@ public class YAPI
         }
 
         if (start < p) {
-            return int.Parse(val.Substring(start, p - start));
+            Int32 res;
+            Int32.TryParse(val.Substring(start, p - start), NumberStyles.Integer, CultureInfo.InvariantCulture, out res);
+            return res;
         }
 
         return 0;
+    }
+
+    public static Int64 _atol(string val)
+    {
+        int p = 0;
+        while (p < val.Length && Char.IsWhiteSpace(val[p])) {
+            p++;
+        }
+
+        int start = p;
+        if (p < val.Length && (val[p] == '-' || val[p] == '+'))
+            p++;
+        while (p < val.Length && Char.IsDigit(val[p])) {
+            p++;
+        }
+
+        if (start < p) {
+            Int64 res;
+            Int64.TryParse(val.Substring(start, p - start), NumberStyles.Integer, CultureInfo.InvariantCulture, out res);
+            return res;
+        }
+
+        return 0;
+    }
+
+    public static UInt64 _atoul(string val)
+    {
+        int p = 0;
+        while (p < val.Length && Char.IsWhiteSpace(val[p])) {
+            p++;
+        }
+
+        int start = p;
+        if (p < val.Length && val[p] == '+')
+            p++;
+        while (p < val.Length && Char.IsDigit(val[p])) {
+            p++;
+        }
+
+        if (start < p) {
+            UInt64 res;
+            UInt64.TryParse(val.Substring(start, p - start), NumberStyles.Integer, CultureInfo.InvariantCulture, out res);
+            return res;
+        }
+
+        return 0;
+    }
+
+    public static Double _atof(string val)
+    {
+        Double res;
+        Double.TryParse(val, NumberStyles.Number, CultureInfo.InvariantCulture, out res);
+        return res;
+    }
+
+    public static int _hexStrToInt(string hex_str)
+    {
+        Int32 res;
+        Int32.TryParse(hex_str, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out res);
+        return res;
+    }
+
+    public static Int64 _hexStrToLong(string hex_str)
+    {
+        Int64 res;
+        Int64.TryParse(hex_str, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out res);
+        return res;
     }
 
     protected const string _hexArray = "0123456789ABCDEF";
@@ -4983,10 +5094,6 @@ public class YAPI
         _PlugEvents = new List<PlugEvent>(5);
         _DataEvents = new List<DataEvent>(10);
 
-        yArrival = null;
-        yRemoval = null;
-        yChange = null;
-        _HubDiscoveryCallback = null;
         buffer.Length = 0;
         res = SafeNativeMethods._yapiInitAPI(mode, buffer);
         if (res != YAPI.DEVICE_BUSY) {
@@ -5016,11 +5123,27 @@ public class YAPI
 
     /**
      * <summary>
-     *   Frees dynamically allocated memory blocks used by the Yoctopuce library.
+     *   Waits for all pending communications with Yoctopuce devices to be
+     *   completed then frees dynamically allocated resources used by
+     *   the Yoctopuce library.
      * <para>
-     *   It is generally not required to call this function, unless you
-     *   want to free all dynamically allocated memory blocks in order to
-     *   track a memory leak for instance.
+     * </para>
+     * <para>
+     *   From an operating system standpoint, it is generally not required to call
+     *   this function since the OS will automatically free allocated resources
+     *   once your program is completed. However there are two situations when
+     *   you may really want to use that function:
+     * </para>
+     * <para>
+     *   - Free all dynamically allocated memory blocks in order to
+     *   track a memory leak.
+     * </para>
+     * <para>
+     *   - Send commands to devices right before the end
+     *   of the program. Since commands are sent in an asynchronous way
+     *   the program could exit before all commands are effectively sent.
+     * </para>
+     * <para>
      *   You should not call any other library function after calling
      *   <c>yFreeAPI()</c>, or your program will crash.
      * </para>
@@ -5030,6 +5153,11 @@ public class YAPI
     {
         if (_apiInitialized) {
             SafeNativeMethods._yapiFreeAPI();
+            ylog = null;
+            yArrival = null;
+            yRemoval = null;
+            yChange = null;
+            _HubDiscoveryCallback = null;
             YDevice_devCache.Clear();
             YDevice_devCache = null;
             _PlugEvents.Clear();
@@ -5041,7 +5169,6 @@ public class YAPI
             YFunction._ClearCache();
             YFunction._CalibHandlers.Clear();
             YModule._moduleCallbackList.Clear();
-            ylog = null;
             _apiInitialized = false;
         }
     }
@@ -5050,7 +5177,8 @@ public class YAPI
      * <summary>
      *   Setup the Yoctopuce library to use modules connected on a given machine.
      * <para>
-     *   The
+     *   Idealy this
+     *   call will be made once at the begining of your application.  The
      *   parameter will determine how the API will work. Use the following values:
      * </para>
      * <para>
@@ -5090,7 +5218,9 @@ public class YAPI
      *   <c>http://username:password@address:port</c>
      * </para>
      * <para>
-     *   You can call <i>RegisterHub</i> several times to connect to several machines.
+     *   You can call <i>RegisterHub</i> several times to connect to several machines. On
+     *   the other hand, it is useless and even counterproductive to call <i>RegisterHub</i>
+     *   with to same address multiple times during the life of the application.
      * </para>
      * <para>
      * </para>
@@ -5279,15 +5409,12 @@ public class YAPI
         }
 
         res = yapiUpdateDeviceList(0, ref errmsg);
-        if (YISERR(res)) {
-            return res;
-        }
-
-        errbuffer.Length = 0;
-        res = SafeNativeMethods._yapiHandleEvents(errbuffer);
-        if (YISERR(res)) {
-            errmsg = errbuffer.ToString();
-            return res;
+        if (!YISERR(res)) {
+            errbuffer.Length = 0;
+            res = SafeNativeMethods._yapiHandleEvents(errbuffer);
+            if (YISERR(res)) {
+                errmsg = errbuffer.ToString();
+            }
         }
 
         while (_PlugEvents.Count > 0) {
@@ -5298,7 +5425,7 @@ public class YAPI
             p.invoke();
         }
 
-        return SUCCESS;
+        return res;
     }
 
 
@@ -5696,6 +5823,30 @@ public class YAPI
 
     /**
      * <summary>
+     *   Adds a UDEV rule which authorizes all users to access Yoctopuce modules
+     *   connected to the USB ports.
+     * <para>
+     *   This function works only under Linux. The process that
+     *   calls this method must have root privileges because this method changes the Linux configuration.
+     * </para>
+     * </summary>
+     * <param name="force">
+     *   if true, overwrites any existing rule.
+     * </param>
+     * <returns>
+     *   an empty string if the rule has been added.
+     * </returns>
+     * <para>
+     *   On failure, returns a string that starts with "error:".
+     * </para>
+     */
+    public static string AddUdevRule(bool force)
+    {
+        return _yapiContext.AddUdevRule(force);
+    }
+
+    /**
+     * <summary>
      *   Modifies the network connection delay for <c>yRegisterHub()</c> and <c>yUpdateDeviceList()</c>.
      * <para>
      *   This delay impacts only the YoctoHubs and VirtualHub
@@ -5850,6 +6001,46 @@ public class YAPIContext
 
     /**
      * <summary>
+     *   Adds a UDEV rule which authorizes all users to access Yoctopuce modules
+     *   connected to the USB ports.
+     * <para>
+     *   This function works only under Linux. The process that
+     *   calls this method must have root privileges because this method changes the Linux configuration.
+     * </para>
+     * </summary>
+     * <param name="force">
+     *   if true, overwrites any existing rule.
+     * </param>
+     * <returns>
+     *   an empty string if the rule has been added.
+     * </returns>
+     * <para>
+     *   On failure, returns a string that starts with "error:".
+     * </para>
+     */
+    public virtual string AddUdevRule(bool force)
+    {
+        string msg;
+        int res;
+        int c_force;
+        StringBuilder errmsg = new StringBuilder(YAPI.YOCTO_ERRMSG_LEN);
+        if (force) {
+            c_force = 1;
+        } else {
+            c_force = 0;
+        }
+        res = SafeNativeMethods._yapiAddUdevRulesForYocto(c_force, errmsg);
+        if (res < 0) {
+            msg = "error: " + errmsg.ToString();
+        } else {
+            msg = "";
+        }
+        return msg;
+    }
+
+
+    /**
+     * <summary>
      *   Modifies the network connection delay for <c>yRegisterHub()</c> and <c>yUpdateDeviceList()</c>.
      * <para>
      *   This delay impacts only the YoctoHubs and VirtualHub
@@ -5969,7 +6160,7 @@ public class YFirmwareUpdate
     //--- (generated code: YFirmwareUpdate definitions)
 
     protected string _serial;
-    protected byte[] _settings;
+    protected byte[] _settings = new byte[0];
     protected string _firmwarepath;
     protected string _progress_msg;
     protected int _progress_c = 0;
@@ -6459,16 +6650,26 @@ public class YDataStream
         if (this._isAvg) {
             while (idx + 3 < udat.Count) {
                 dat.Clear();
-                dat.Add(this._decodeVal(udat[idx + 2] + (((udat[idx + 3]) << (16)))));
-                dat.Add(this._decodeAvg(udat[idx] + (((((udat[idx + 1]) ^ (0x8000))) << (16))), 1));
-                dat.Add(this._decodeVal(udat[idx + 4] + (((udat[idx + 5]) << (16)))));
+                if ((udat[idx] == 65535) && (udat[idx + 1] == 65535)) {
+                    dat.Add(Double.NaN);
+                    dat.Add(Double.NaN);
+                    dat.Add(Double.NaN);
+                } else {
+                    dat.Add(this._decodeVal(udat[idx + 2] + (((udat[idx + 3]) << (16)))));
+                    dat.Add(this._decodeAvg(udat[idx] + (((((udat[idx + 1]) ^ (0x8000))) << (16))), 1));
+                    dat.Add(this._decodeVal(udat[idx + 4] + (((udat[idx + 5]) << (16)))));
+                }
                 idx = idx + 6;
                 this._values.Add(new List<double>(dat));
             }
         } else {
             while (idx + 1 < udat.Count) {
                 dat.Clear();
-                dat.Add(this._decodeAvg(udat[idx] + (((((udat[idx + 1]) ^ (0x8000))) << (16))), 1));
+                if ((udat[idx] == 65535) && (udat[idx + 1] == 65535)) {
+                    dat.Add(Double.NaN);
+                } else {
+                    dat.Add(this._decodeAvg(udat[idx] + (((((udat[idx + 1]) ^ (0x8000))) << (16))), 1));
+                }
                 this._values.Add(new List<double>(dat));
                 idx = idx + 2;
             }
@@ -7381,6 +7582,7 @@ public class YDataSet
         double tim;
         double itv;
         double fitv;
+        double avgv;
         double end_;
         int nCols;
         int minCol;
@@ -7431,8 +7633,9 @@ public class YDataSet
             } else {
                 end_ = tim + itv;
             }
-            if ((end_ > this._startTimeMs) && ((this._endTimeMs == 0) || (tim < this._endTimeMs))) {
-                this._measures.Add(new YMeasure(tim / 1000, end_ / 1000, dataRows[ii][minCol], dataRows[ii][avgCol], dataRows[ii][maxCol]));
+            avgv = dataRows[ii][avgCol];
+            if ((end_ > this._startTimeMs) && ((this._endTimeMs == 0) || (tim < this._endTimeMs)) && !(Double.IsNaN(avgv))) {
+                this._measures.Add(new YMeasure(tim / 1000, end_ / 1000, dataRows[ii][minCol], avgv, dataRows[ii][maxCol]));
             }
             tim = end_;
         }
@@ -8904,7 +9107,7 @@ public class YFunction
     public virtual string loadAttribute(string attrName)
     {
         string url;
-        byte[] attrVal;
+        byte[] attrVal = new byte[0];
         url = "api/"+ this.get_functionId()+"/"+attrName;
         attrVal = this._download(url);
         return YAPI.DefaultEncoding.GetString(attrVal);
@@ -8953,7 +9156,7 @@ public class YFunction
      *   a string corresponding to the serial number of the module, as set by the factory.
      * </returns>
      * <para>
-     *   On failure, throws an exception or returns YModule.SERIALNUMBER_INVALID.
+     *   On failure, throws an exception or returns YFunction.SERIALNUMBER_INVALID.
      * </para>
      */
     public virtual string get_serialNumber()
@@ -9642,7 +9845,7 @@ public class YFunction
      *   an identifier of type <c>YFUN_DESCR</c>.
      * </returns>
      * <para>
-     *   If the function has never been contacted, the returned value is <c>YFunction.FUNCTIONDESCRIPTOR_INVALID</c>.
+     *   If the function has never been contacted, the returned value is <c>Y$CLASSNAME$.FUNCTIONDESCRIPTOR_INVALID</c>.
      * </para>
      */
     public YFUN_DESCR get_functionDescriptor()
@@ -10735,7 +10938,7 @@ public class YModule : YFunction
     public virtual YFirmwareUpdate updateFirmwareEx(string path, bool force)
     {
         string serial;
-        byte[] settings;
+        byte[] settings = new byte[0];
 
         serial = this.get_serialNumber();
         settings = this.get_allSettings();
@@ -10789,9 +10992,9 @@ public class YModule : YFunction
      */
     public virtual byte[] get_allSettings()
     {
-        byte[] settings;
-        byte[] json;
-        byte[] res;
+        byte[] settings = new byte[0];
+        byte[] json = new byte[0];
+        byte[] res = new byte[0];
         string sep;
         string name;
         string item;
@@ -10799,8 +11002,8 @@ public class YModule : YFunction
         string id;
         string url;
         string file_data;
-        byte[] file_data_bin;
-        byte[] temp_data_bin;
+        byte[] file_data_bin = new byte[0];
+        byte[] temp_data_bin = new byte[0];
         string ext_settings;
         List<string> filelist = new List<string>();
         List<string> templist = new List<string>();
@@ -10922,11 +11125,14 @@ public class YModule : YFunction
      */
     public virtual int set_allSettingsAndFiles(byte[] settings)
     {
-        byte[] down;
+        byte[] down = new byte[0];
         string json;
         string json_api;
         string json_files;
         string json_extra;
+        int fuperror;
+        int globalres;
+        fuperror = 0;
         json = YAPI.DefaultEncoding.GetString(settings);
         json_api = this._get_json_path(json, "api");
         if (json_api == "") {
@@ -10945,7 +11151,10 @@ public class YModule : YFunction
             down = this._download("files.json?a=format");
             res = this._get_json_path(YAPI.DefaultEncoding.GetString(down), "res");
             res = this._decode_json_string(res);
-            if (!(res == "ok")) { this._throw( YAPI.IO_ERROR, "format failed"); return YAPI.IO_ERROR; }
+            if (!(res == "ok")) {
+                this._throw(YAPI.IO_ERROR, "format failed");
+                return YAPI.IO_ERROR;
+            }
             json_files = this._get_json_path(json, "files");
             files = this._json_get_array(YAPI.DefaultEncoding.GetBytes(json_files));
             for (int ii = 0; ii <  files.Count; ii++) {
@@ -10953,11 +11162,20 @@ public class YModule : YFunction
                 name = this._decode_json_string(name);
                 data = this._get_json_path( files[ii], "data");
                 data = this._decode_json_string(data);
-                this._upload(name, YAPI._hexStrToBin(data));
+                if (name == "") {
+                    fuperror = fuperror + 1;
+                } else {
+                    this._upload(name, YAPI._hexStrToBin(data));
+                }
             }
         }
         // Apply settings a second time for file-dependent settings and dynamic sensor nodes
-        return this.set_allSettings(YAPI.DefaultEncoding.GetBytes(json_api));
+        globalres = this.set_allSettings(YAPI.DefaultEncoding.GetBytes(json_api));
+        if (!(fuperror == 0)) {
+            this._throw(YAPI.IO_ERROR, "Error during file upload");
+            return YAPI.IO_ERROR;
+        }
+        return globalres;
     }
 
 
@@ -11220,7 +11438,7 @@ public class YModule : YFunction
                     }
                 } else {
                     if (paramVer == 0) {
-                        ratio = Double.Parse(param);
+                        ratio = YAPI._atof(param);
                         if (ratio > 0) {
                             calibData.Add(0.0);
                             calibData.Add(0.0);
@@ -11347,12 +11565,12 @@ public class YModule : YFunction
     public virtual int set_allSettings(byte[] settings)
     {
         List<string> restoreLast = new List<string>();
-        byte[] old_json_flat;
+        byte[] old_json_flat = new byte[0];
         List<string> old_dslist = new List<string>();
         List<string> old_jpath = new List<string>();
         List<int> old_jpath_len = new List<int>();
         List<string> old_val_arr = new List<string>();
-        byte[] actualSettings;
+        byte[] actualSettings = new byte[0];
         List<string> new_dslist = new List<string>();
         List<string> new_jpath = new List<string>();
         List<int> new_jpath_len = new List<int>();
@@ -11730,7 +11948,7 @@ public class YModule : YFunction
      */
     public virtual string get_lastLogs()
     {
-        byte[] content;
+        byte[] content = new byte[0];
 
         content = this._download("logs.txt");
         return YAPI.DefaultEncoding.GetString(content);
@@ -11916,7 +12134,7 @@ public class YModule : YFunction
      *   (ex: <c>MyCustomName.relay1</c>)
      * </returns>
      * <para>
-     *   On failure, throws an exception or returns  <c>YModule.FRIENDLYNAME_INVALID</c>.
+     *   On failure, throws an exception or returns  <c>YFunction.FRIENDLYNAME_INVALID</c>.
      * </para>
      */
 
@@ -13268,10 +13486,13 @@ public class YSensor : YFunction
      */
     public virtual int startDataLogger()
     {
-        byte[] res;
+        byte[] res = new byte[0];
 
         res = this._download("api/dataLogger/recording?recording=1");
-        if (!((res).Length>0)) { this._throw( YAPI.IO_ERROR, "unable to start datalogger"); return YAPI.IO_ERROR; }
+        if (!((res).Length>0)) {
+            this._throw(YAPI.IO_ERROR, "unable to start datalogger");
+            return YAPI.IO_ERROR;
+        }
         return YAPI.SUCCESS;
     }
 
@@ -13288,10 +13509,13 @@ public class YSensor : YFunction
      */
     public virtual int stopDataLogger()
     {
-        byte[] res;
+        byte[] res = new byte[0];
 
         res = this._download("api/dataLogger/recording?recording=0");
-        if (!((res).Length>0)) { this._throw( YAPI.IO_ERROR, "unable to stop datalogger"); return YAPI.IO_ERROR; }
+        if (!((res).Length>0)) {
+            this._throw(YAPI.IO_ERROR, "unable to stop datalogger");
+            return YAPI.IO_ERROR;
+        }
         return YAPI.SUCCESS;
     }
 
@@ -14220,7 +14444,7 @@ public class YDataLogger : YFunction
      * </summary>
      * <param name="func">
      *   a string that uniquely characterizes the data logger, for instance
-     *   <c>Y3DMK002.dataLogger</c>.
+     *   <c>LIGHTMK4.dataLogger</c>.
      * </param>
      * <returns>
      *   a <c>YDataLogger</c> object allowing you to drive the data logger.

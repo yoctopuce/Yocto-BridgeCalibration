@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_files.cs 38934 2019-12-23 09:29:53Z seb $
+ * $Id: yocto_files.cs 48017 2022-01-12 08:17:52Z seb $
  *
  * Implements yFindFiles(), the high-level API for Files functions
  *
@@ -290,7 +290,7 @@ public class YFiles : YFunction
      * </summary>
      * <param name="func">
      *   a string that uniquely characterizes the filesystem, for instance
-     *   <c>YBUZZER2.files</c>.
+     *   <c>YRGBLED2.files</c>.
      * </param>
      * <returns>
      *   a <c>YFiles</c> object allowing you to drive the filesystem.
@@ -384,11 +384,14 @@ public class YFiles : YFunction
      */
     public virtual int format_fs()
     {
-        byte[] json;
+        byte[] json = new byte[0];
         string res;
         json = this.sendCommand("format");
         res = this._json_get_key(json, "res");
-        if (!(res == "ok")) { this._throw( YAPI.IO_ERROR, "format failed"); return YAPI.IO_ERROR; }
+        if (!(res == "ok")) {
+            this._throw(YAPI.IO_ERROR, "format failed");
+            return YAPI.IO_ERROR;
+        }
         return YAPI.SUCCESS;
     }
 
@@ -415,7 +418,7 @@ public class YFiles : YFunction
      */
     public virtual List<YFileRecord> get_list(string pattern)
     {
-        byte[] json;
+        byte[] json = new byte[0];
         List<string> filelist = new List<string>();
         List<YFileRecord> res = new List<YFileRecord>();
         json = this.sendCommand("dir&f="+pattern);
@@ -446,7 +449,7 @@ public class YFiles : YFunction
      */
     public virtual bool fileExist(string filename)
     {
-        byte[] json;
+        byte[] json = new byte[0];
         List<string> filelist = new List<string>();
         if ((filename).Length == 0) {
             return false;
@@ -531,11 +534,14 @@ public class YFiles : YFunction
      */
     public virtual int remove(string pathname)
     {
-        byte[] json;
+        byte[] json = new byte[0];
         string res;
         json = this.sendCommand("del&f="+pathname);
         res  = this._json_get_key(json, "res");
-        if (!(res == "ok")) { this._throw( YAPI.IO_ERROR, "unable to remove file"); return YAPI.IO_ERROR; }
+        if (!(res == "ok")) {
+            this._throw(YAPI.IO_ERROR, "unable to remove file");
+            return YAPI.IO_ERROR;
+        }
         return YAPI.SUCCESS;
     }
 

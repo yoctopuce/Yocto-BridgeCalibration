@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_steppermotor.cs 38913 2019-12-20 18:59:49Z mvuilleu $
+ *  $Id: yocto_steppermotor.cs 48017 2022-01-12 08:17:52Z seb $
  *
  *  Implements yFindStepperMotor(), the high-level API for StepperMotor functions
  *
@@ -1018,7 +1018,7 @@ public class YStepperMotor : YFunction
     {
         string id;
         string url;
-        byte[] retBin;
+        byte[] retBin = new byte[0];
         int res;
         id = this.get_functionId();
         id = (id).Substring( 12, 1);
@@ -1026,10 +1026,16 @@ public class YStepperMotor : YFunction
         //may throw an exception
         retBin = this._download(url);
         res = retBin[0];
-        if (res == 49) {
-            if (!(res == 48)) { this._throw( YAPI.DEVICE_BUSY, "Motor command pipeline is full, try again later"); return YAPI.DEVICE_BUSY; }
+        if (res < 58) {
+            if (!(res == 48)) {
+                this._throw(YAPI.DEVICE_BUSY, "Motor command pipeline is full, try again later");
+                return YAPI.DEVICE_BUSY;
+            }
         } else {
-            if (!(res == 48)) { this._throw( YAPI.IO_ERROR, "Motor command failed permanently"); return YAPI.IO_ERROR; }
+            if (!(res == 48)) {
+                this._throw(YAPI.IO_ERROR, "Motor command failed permanently");
+                return YAPI.IO_ERROR;
+            }
         }
         return YAPI.SUCCESS;
     }
@@ -1241,7 +1247,10 @@ public class YStepperMotor : YFunction
      */
     public virtual int alertStepDir(int dir)
     {
-        if (!(dir != 0)) { this._throw( YAPI.INVALID_ARGUMENT, "direction must be +1 or -1"); return YAPI.INVALID_ARGUMENT; }
+        if (!(dir != 0)) {
+            this._throw(YAPI.INVALID_ARGUMENT, "direction must be +1 or -1");
+            return YAPI.INVALID_ARGUMENT;
+        }
         if (dir > 0) {
             return this.set_command(".+");
         }

@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- * $Id: yocto_serialport.cs 38899 2019-12-20 17:21:03Z mvuilleu $
+ * $Id: yocto_serialport.cs 48017 2022-01-12 08:17:52Z seb $
  *
  * Implements yFindSerialPort(), the high-level API for SerialPort functions
  *
@@ -94,12 +94,12 @@ public class YSnoopingRecord
 
     /**
      * <summary>
-     *   Returns the message direction (RX=0 , TX=1) .
+     *   Returns the message direction (RX=0, TX=1).
      * <para>
      * </para>
      * </summary>
      * <returns>
-     *   the message direction (RX=0 , TX=1) .
+     *   the message direction (RX=0, TX=1).
      * </returns>
      */
     public virtual int get_direction()
@@ -191,7 +191,7 @@ public class YSerialPort : YFunction
     protected string _serialMode = SERIALMODE_INVALID;
     protected ValueCallback _valueCallbackSerialPort = null;
     protected int _rxptr = 0;
-    protected byte[] _rxbuff;
+    protected byte[] _rxbuff = new byte[0];
     protected int _rxbuffptr = 0;
     //--- (end of generated code: YSerialPort definitions)
 
@@ -658,6 +658,7 @@ public class YSerialPort : YFunction
      *   Returns the type of protocol used over the serial line, as a string.
      * <para>
      *   Possible values are "Line" for ASCII messages separated by CR and/or LF,
+     *   "StxEtx" for ASCII messages delimited by STX/ETX codes,
      *   "Frame:[timeout]ms" for binary messages separated by a delay time,
      *   "Modbus-ASCII" for MODBUS messages in ASCII mode,
      *   "Modbus-RTU" for MODBUS messages in RTU mode,
@@ -695,6 +696,7 @@ public class YSerialPort : YFunction
      *   Changes the type of protocol used over the serial line.
      * <para>
      *   Possible values are "Line" for ASCII messages separated by CR and/or LF,
+     *   "StxEtx" for ASCII messages delimited by STX/ETX codes,
      *   "Frame:[timeout]ms" for binary messages separated by a delay time,
      *   "Modbus-ASCII" for MODBUS messages in ASCII mode,
      *   "Modbus-RTU" for MODBUS messages in RTU mode,
@@ -1023,7 +1025,7 @@ public class YSerialPort : YFunction
     public virtual string readLine()
     {
         string url;
-        byte[] msgbin;
+        byte[] msgbin = new byte[0];
         List<string> msgarr = new List<string>();
         int msglen;
         string res;
@@ -1081,7 +1083,7 @@ public class YSerialPort : YFunction
     public virtual List<string> readMessages(string pattern, int maxWait)
     {
         string url;
-        byte[] msgbin;
+        byte[] msgbin = new byte[0];
         List<string> msgarr = new List<string>();
         int msglen;
         List<string> res = new List<string>();
@@ -1158,7 +1160,7 @@ public class YSerialPort : YFunction
      */
     public virtual int read_avail()
     {
-        byte[] buff;
+        byte[] buff = new byte[0];
         int bufflen;
         int res;
 
@@ -1196,12 +1198,60 @@ public class YSerialPort : YFunction
     public virtual string queryLine(string query, int maxWait)
     {
         string url;
-        byte[] msgbin;
+        byte[] msgbin = new byte[0];
         List<string> msgarr = new List<string>();
         int msglen;
         string res;
 
         url = "rxmsg.json?len=1&maxw="+Convert.ToString( maxWait)+"&cmd=!"+this._escapeAttr(query);
+        msgbin = this._download(url);
+        msgarr = this._json_get_array(msgbin);
+        msglen = msgarr.Count;
+        if (msglen == 0) {
+            return "";
+        }
+        // last element of array is the new position
+        msglen = msglen - 1;
+        this._rxptr = YAPI._atoi(msgarr[msglen]);
+        if (msglen == 0) {
+            return "";
+        }
+        res = this._json_get_string(YAPI.DefaultEncoding.GetBytes(msgarr[0]));
+        return res;
+    }
+
+
+    /**
+     * <summary>
+     *   Sends a binary message to the serial port, and reads the reply, if any.
+     * <para>
+     *   This function is intended to be used when the serial port is configured for
+     *   Frame-based protocol.
+     * </para>
+     * </summary>
+     * <param name="hexString">
+     *   the message to send, coded in hexadecimal
+     * </param>
+     * <param name="maxWait">
+     *   the maximum number of milliseconds to wait for a reply.
+     * </param>
+     * <returns>
+     *   the next frame received after sending the message, as a hex string.
+     *   Additional frames can be obtained by calling readHex or readMessages.
+     * </returns>
+     * <para>
+     *   On failure, throws an exception or returns an empty string.
+     * </para>
+     */
+    public virtual string queryHex(string hexString, int maxWait)
+    {
+        string url;
+        byte[] msgbin = new byte[0];
+        List<string> msgarr = new List<string>();
+        int msglen;
+        string res;
+
+        url = "rxmsg.json?len=1&maxw="+Convert.ToString( maxWait)+"&cmd=$"+hexString;
         msgbin = this._download(url);
         msgarr = this._json_get_array(msgbin);
         msglen = msgarr.Count;
@@ -1338,7 +1388,7 @@ public class YSerialPort : YFunction
      */
     public virtual int writeStr(string text)
     {
-        byte[] buff;
+        byte[] buff = new byte[0];
         int bufflen;
         int idx;
         int ch;
@@ -1405,7 +1455,7 @@ public class YSerialPort : YFunction
      */
     public virtual int writeArray(List<int> byteList)
     {
-        byte[] buff;
+        byte[] buff = new byte[0];
         int bufflen;
         int idx;
         int hexb;
@@ -1442,7 +1492,7 @@ public class YSerialPort : YFunction
      */
     public virtual int writeHex(string hexString)
     {
-        byte[] buff;
+        byte[] buff = new byte[0];
         int bufflen;
         int idx;
         int hexb;
@@ -1455,7 +1505,7 @@ public class YSerialPort : YFunction
         buff = new byte[bufflen];
         idx = 0;
         while (idx < bufflen) {
-            hexb = Convert.ToInt32((hexString).Substring( 2 * idx, 2), 16);
+            hexb = YAPI._hexStrToInt((hexString).Substring( 2 * idx, 2));
             buff[idx] = (byte)(hexb & 0xff);
             idx = idx + 1;
         }
@@ -1483,7 +1533,7 @@ public class YSerialPort : YFunction
      */
     public virtual int writeLine(string text)
     {
-        byte[] buff;
+        byte[] buff = new byte[0];
         int bufflen;
         int idx;
         int ch;
@@ -1529,7 +1579,7 @@ public class YSerialPort : YFunction
     {
         int currpos;
         int reqlen;
-        byte[] buff;
+        byte[] buff = new byte[0];
         int bufflen;
         int mult;
         int endpos;
@@ -1606,7 +1656,7 @@ public class YSerialPort : YFunction
      */
     public virtual string readStr(int nChars)
     {
-        byte[] buff;
+        byte[] buff = new byte[0];
         int bufflen;
         int mult;
         int endpos;
@@ -1650,12 +1700,12 @@ public class YSerialPort : YFunction
      */
     public virtual byte[] readBin(int nChars)
     {
-        byte[] buff;
+        byte[] buff = new byte[0];
         int bufflen;
         int mult;
         int endpos;
         int idx;
-        byte[] res;
+        byte[] res = new byte[0];
         if (nChars > 65535) {
             nChars = 65535;
         }
@@ -1700,7 +1750,7 @@ public class YSerialPort : YFunction
      */
     public virtual List<int> readArray(int nChars)
     {
-        byte[] buff;
+        byte[] buff = new byte[0];
         int bufflen;
         int mult;
         int endpos;
@@ -1752,7 +1802,7 @@ public class YSerialPort : YFunction
      */
     public virtual string readHex(int nBytes)
     {
-        byte[] buff;
+        byte[] buff = new byte[0];
         int bufflen;
         int mult;
         int endpos;
@@ -1831,11 +1881,14 @@ public class YSerialPort : YFunction
      */
     public virtual int get_CTS()
     {
-        byte[] buff;
+        byte[] buff = new byte[0];
         int res;
 
         buff = this._download("cts.txt");
-        if (!((buff).Length == 1)) { this._throw( YAPI.IO_ERROR, "invalid CTS reply"); return YAPI.IO_ERROR; }
+        if (!((buff).Length == 1)) {
+            this._throw(YAPI.IO_ERROR, "invalid CTS reply");
+            return YAPI.IO_ERROR;
+        }
         res = buff[0] - 48;
         return res;
     }
@@ -1868,7 +1921,7 @@ public class YSerialPort : YFunction
     public virtual List<YSnoopingRecord> snoopMessages(int maxWait)
     {
         string url;
-        byte[] msgbin;
+        byte[] msgbin = new byte[0];
         List<string> msgarr = new List<string>();
         int msglen;
         List<YSnoopingRecord> res = new List<YSnoopingRecord>();
@@ -1890,6 +1943,32 @@ public class YSerialPort : YFunction
             idx = idx + 1;
         }
         return res;
+    }
+
+
+    /**
+     * <summary>
+     *   Sends an ASCII string to the serial port, preceeded with an STX code and
+     *   followed by an ETX code.
+     * <para>
+     * </para>
+     * </summary>
+     * <param name="text">
+     *   the text string to send
+     * </param>
+     * <returns>
+     *   <c>YAPI.SUCCESS</c> if the call succeeds.
+     * </returns>
+     * <para>
+     *   On failure, throws an exception or returns a negative error code.
+     * </para>
+     */
+    public virtual int writeStxEtx(string text)
+    {
+        byte[] buff = new byte[0];
+        buff = YAPI.DefaultEncoding.GetBytes(""+((char)( 2)).ToString()+""+ text+""+((char)(3)).ToString());
+        // send string using file upload
+        return this._upload("txdata", buff);
     }
 
 
@@ -1947,7 +2026,7 @@ public class YSerialPort : YFunction
         string cmd;
         string url;
         string pat;
-        byte[] msgs;
+        byte[] msgs = new byte[0];
         List<string> reps = new List<string>();
         string rep;
         List<int> res = new List<int>();
@@ -1966,22 +2045,37 @@ public class YSerialPort : YFunction
         url = "rxmsg.json?cmd=:"+ cmd+"&pat=:"+pat;
         msgs = this._download(url);
         reps = this._json_get_array(msgs);
-        if (!(reps.Count > 1)) { this._throw( YAPI.IO_ERROR, "no reply from MODBUS slave"); return res; }
+        if (!(reps.Count > 1)) {
+            this._throw(YAPI.IO_ERROR, "no reply from MODBUS slave");
+            return res;
+        }
         if (reps.Count > 1) {
             rep = this._json_get_string(YAPI.DefaultEncoding.GetBytes(reps[0]));
             replen = (((rep).Length - 3) >> (1));
             i = 0;
             while (i < replen) {
-                hexb = Convert.ToInt32((rep).Substring(2 * i + 3, 2), 16);
+                hexb = YAPI._hexStrToInt((rep).Substring(2 * i + 3, 2));
                 res.Add(hexb);
                 i = i + 1;
             }
             if (res[0] != funCode) {
                 i = res[1];
-                if (!(i > 1)) { this._throw( YAPI.NOT_SUPPORTED, "MODBUS error: unsupported function code"); return res; }
-                if (!(i > 2)) { this._throw( YAPI.INVALID_ARGUMENT, "MODBUS error: illegal data address"); return res; }
-                if (!(i > 3)) { this._throw( YAPI.INVALID_ARGUMENT, "MODBUS error: illegal data value"); return res; }
-                if (!(i > 4)) { this._throw( YAPI.INVALID_ARGUMENT, "MODBUS error: failed to execute function"); return res; }
+                if (!(i > 1)) {
+                    this._throw(YAPI.NOT_SUPPORTED, "MODBUS error: unsupported function code");
+                    return res;
+                }
+                if (!(i > 2)) {
+                    this._throw(YAPI.INVALID_ARGUMENT, "MODBUS error: illegal data address");
+                    return res;
+                }
+                if (!(i > 3)) {
+                    this._throw(YAPI.INVALID_ARGUMENT, "MODBUS error: illegal data value");
+                    return res;
+                }
+                if (!(i > 4)) {
+                    this._throw(YAPI.INVALID_ARGUMENT, "MODBUS error: failed to execute function");
+                    return res;
+                }
             }
         }
         return res;

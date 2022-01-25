@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupmonitor.cs 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_wakeupmonitor.cs 48183 2022-01-20 10:26:11Z mvuilleu $
  *
  *  Implements yFindWakeUpMonitor(), the high-level API for WakeUpMonitor functions
  *
@@ -447,7 +447,7 @@ public class YWakeUpMonitor : YFunction
      * </summary>
      * <param name="func">
      *   a string that uniquely characterizes the wake-up monitor, for instance
-     *   <c>YHUBGSM3.wakeUpMonitor</c>.
+     *   <c>YHUBGSM5.wakeUpMonitor</c>.
      * </param>
      * <returns>
      *   a <c>YWakeUpMonitor</c> object allowing you to drive the wake-up monitor.
@@ -550,7 +550,10 @@ public class YWakeUpMonitor : YFunction
     {
         int currTime;
         currTime = (int)(this.get_rtcTime());
-        if (!(currTime != 0)) { this._throw( YAPI.RTC_NOT_READY, "RTC time not set"); return YAPI.RTC_NOT_READY; }
+        if (!(currTime != 0)) {
+            this._throw(YAPI.RTC_NOT_READY, "RTC time not set");
+            return YAPI.RTC_NOT_READY;
+        }
         this.set_nextWakeUp(this._endOfTime);
         this.set_sleepCountdown(secBeforeSleep);
         return YAPI.SUCCESS;
@@ -583,7 +586,10 @@ public class YWakeUpMonitor : YFunction
     {
         int currTime;
         currTime = (int)(this.get_rtcTime());
-        if (!(currTime != 0)) { this._throw( YAPI.RTC_NOT_READY, "RTC time not set"); return YAPI.RTC_NOT_READY; }
+        if (!(currTime != 0)) {
+            this._throw(YAPI.RTC_NOT_READY, "RTC time not set");
+            return YAPI.RTC_NOT_READY;
+        }
         this.set_nextWakeUp(currTime+secUntilWakeUp);
         this.set_sleepCountdown(secBeforeSleep);
         return YAPI.SUCCESS;
@@ -616,7 +622,10 @@ public class YWakeUpMonitor : YFunction
     {
         int currTime;
         currTime = (int)(this.get_rtcTime());
-        if (!(currTime != 0)) { this._throw( YAPI.RTC_NOT_READY, "RTC time not set"); return YAPI.RTC_NOT_READY; }
+        if (!(currTime != 0)) {
+            this._throw(YAPI.RTC_NOT_READY, "RTC time not set");
+            return YAPI.RTC_NOT_READY;
+        }
         this.set_nextWakeUp(wakeUpTime);
         this.set_sleepCountdown(secBeforeSleep);
         return YAPI.SUCCESS;

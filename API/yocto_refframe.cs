@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_refframe.cs 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_refframe.cs 48017 2022-01-12 08:17:52Z seb $
  *
  *  Implements yFindRefFrame(), the high-level API for RefFrame functions
  *
@@ -61,8 +61,8 @@ using YFUN_DESCR = System.Int32;
  *   sensors.
  * <para>
  *   Thanks to this, orientation functions relative to the earth surface plane
- *   can use the proper reference frame. The class also implements a tridimensional
- *   sensor calibration process, which can compensate for local variations
+ *   can use the proper reference frame. For some devices, the class also implements a
+ *   tridimensional sensor calibration process, which can compensate for local variations
  *   of standard gravity and improve the precision of the tilt sensors.
  * </para>
  * <para>
@@ -76,22 +76,24 @@ public class YRefFrame : YFunction
     public new delegate void ValueCallback(YRefFrame func, string value);
     public new delegate void TimedReportCallback(YRefFrame func, YMeasure measure);
 
-public enum   MOUNTPOSITION
-    {   BOTTOM = 0,
+    public enum MOUNTPOSITION
+    {
+        BOTTOM = 0,
         TOP = 1,
         FRONT = 2,
         REAR = 3,
         RIGHT = 4,
         LEFT = 5,
         INVALID = 6
-     };
-public enum   MOUNTORIENTATION
-    {   TWELVE = 0,
+    };
+    public enum MOUNTORIENTATION
+    {
+        TWELVE = 0,
         THREE = 1,
         SIX = 2,
         NINE = 3,
         INVALID = 4
-     };
+    };
     public const int MOUNTPOS_INVALID = YAPI.INVALID_UINT;
     public const double BEARING_INVALID = YAPI.INVALID_DOUBLE;
     public const string CALIBRATIONPARAM_INVALID = YAPI.INVALID_STRING;
@@ -100,6 +102,9 @@ public enum   MOUNTORIENTATION
     public const int FUSIONMODE_M4G = 2;
     public const int FUSIONMODE_COMPASS = 3;
     public const int FUSIONMODE_IMU = 4;
+    public const int FUSIONMODE_INCLIN_90DEG_1G8 = 5;
+    public const int FUSIONMODE_INCLIN_90DEG_3G6 = 6;
+    public const int FUSIONMODE_INCLIN_10DEG = 7;
     public const int FUSIONMODE_INVALID = -1;
     protected int _mountPos = MOUNTPOS_INVALID;
     protected double _bearing = BEARING_INVALID;
@@ -290,17 +295,19 @@ public enum   MOUNTORIENTATION
 
     /**
      * <summary>
-     *   Returns the BNO055 fusion mode.
+     *   Returns the sensor fusion mode.
      * <para>
-     *   Note this feature is only availabe on Yocto-3D-V2.
+     *   Note that available sensor fusion modes depend on the sensor type.
      * </para>
      * <para>
      * </para>
      * </summary>
      * <returns>
      *   a value among <c>YRefFrame.FUSIONMODE_NDOF</c>, <c>YRefFrame.FUSIONMODE_NDOF_FMC_OFF</c>,
-     *   <c>YRefFrame.FUSIONMODE_M4G</c>, <c>YRefFrame.FUSIONMODE_COMPASS</c> and
-     *   <c>YRefFrame.FUSIONMODE_IMU</c> corresponding to the BNO055 fusion mode
+     *   <c>YRefFrame.FUSIONMODE_M4G</c>, <c>YRefFrame.FUSIONMODE_COMPASS</c>,
+     *   <c>YRefFrame.FUSIONMODE_IMU</c>, <c>YRefFrame.FUSIONMODE_INCLIN_90DEG_1G8</c>,
+     *   <c>YRefFrame.FUSIONMODE_INCLIN_90DEG_3G6</c> and <c>YRefFrame.FUSIONMODE_INCLIN_10DEG</c>
+     *   corresponding to the sensor fusion mode
      * </returns>
      * <para>
      *   On failure, throws an exception or returns <c>YRefFrame.FUSIONMODE_INVALID</c>.
@@ -322,9 +329,9 @@ public enum   MOUNTORIENTATION
 
     /**
      * <summary>
-     *   Change the BNO055 fusion mode.
+     *   Change the sensor fusion mode.
      * <para>
-     *   Note: this feature is only availabe on Yocto-3D-V2.
+     *   Note that available sensor fusion modes depend on the sensor type.
      *   Remember to call the matching module <c>saveToFlash()</c> method to save the setting permanently.
      * </para>
      * <para>
@@ -332,7 +339,9 @@ public enum   MOUNTORIENTATION
      * </summary>
      * <param name="newval">
      *   a value among <c>YRefFrame.FUSIONMODE_NDOF</c>, <c>YRefFrame.FUSIONMODE_NDOF_FMC_OFF</c>,
-     *   <c>YRefFrame.FUSIONMODE_M4G</c>, <c>YRefFrame.FUSIONMODE_COMPASS</c> and <c>YRefFrame.FUSIONMODE_IMU</c>
+     *   <c>YRefFrame.FUSIONMODE_M4G</c>, <c>YRefFrame.FUSIONMODE_COMPASS</c>,
+     *   <c>YRefFrame.FUSIONMODE_IMU</c>, <c>YRefFrame.FUSIONMODE_INCLIN_90DEG_1G8</c>,
+     *   <c>YRefFrame.FUSIONMODE_INCLIN_90DEG_3G6</c> and <c>YRefFrame.FUSIONMODE_INCLIN_10DEG</c>
      * </param>
      * <para>
      * </para>
@@ -478,13 +487,13 @@ public enum   MOUNTORIENTATION
      * </summary>
      * <returns>
      *   a value among the <c>YRefFrame.MOUNTPOSITION</c> enumeration
-     *   (<c>YRefFrame.MOUNTPOSITION.BOTTOM</c>,   <c>YRefFrame.MOUNTPOSITION.TOP</c>,
+     *   (<c>YRefFrame.MOUNTPOSITION.BOTTOM</c>,  <c>YRefFrame.MOUNTPOSITION.TOP</c>,
      *   <c>YRefFrame.MOUNTPOSITION.FRONT</c>,    <c>YRefFrame.MOUNTPOSITION.RIGHT</c>,
      *   <c>YRefFrame.MOUNTPOSITION.REAR</c>,     <c>YRefFrame.MOUNTPOSITION.LEFT</c>),
      *   corresponding to the installation in a box, on one of the six faces.
      * </returns>
      * <para>
-     *   On failure, throws an exception or returns YRefFrame.MOUNTPOSITION.INVALID.
+     *   On failure, throws an exception or returns YRefFrame.MOUNTPOSITION_INVALID.
      * </para>
      */
     public virtual MOUNTPOSITION get_mountPosition()
@@ -518,7 +527,7 @@ public enum   MOUNTORIENTATION
      *   on the top face, the 12H orientation points to the rear.
      * </returns>
      * <para>
-     *   On failure, throws an exception or returns YRefFrame.MOUNTORIENTATION.INVALID.
+     *   On failure, throws an exception or returns YRefFrame.MOUNTORIENTATION_INVALID.
      * </para>
      */
     public virtual MOUNTORIENTATION get_mountOrientation()
@@ -547,7 +556,7 @@ public enum   MOUNTORIENTATION
      * </summary>
      * <param name="position">
      *   a value among the <c>YRefFrame.MOUNTPOSITION</c> enumeration
-     *   (<c>YRefFrame.MOUNTPOSITION.BOTTOM</c>,   <c>YRefFrame.MOUNTPOSITION.TOP</c>,
+     *   (<c>YRefFrame.MOUNTPOSITION.BOTTOM</c>,  <c>YRefFrame.MOUNTPOSITION.TOP</c>,
      *   <c>YRefFrame.MOUNTPOSITION.FRONT</c>,    <c>YRefFrame.MOUNTPOSITION.RIGHT</c>,
      *   <c>YRefFrame.MOUNTPOSITION.REAR</c>,     <c>YRefFrame.MOUNTPOSITION.LEFT</c>),
      *   corresponding to the installation in a box, on one of the six faces.
@@ -772,7 +781,7 @@ public enum   MOUNTORIENTATION
     public virtual int more3DCalibrationV1()
     {
         int currTick;
-        byte[] jsonData;
+        byte[] jsonData = new byte[0];
         double xVal;
         double yVal;
         double zVal;
@@ -974,7 +983,7 @@ public enum   MOUNTORIENTATION
     public virtual int more3DCalibrationV2()
     {
         int currTick;
-        byte[] calibParam;
+        byte[] calibParam = new byte[0];
         List<int> iCalib = new List<int>();
         int cal3;
         int calAcc;

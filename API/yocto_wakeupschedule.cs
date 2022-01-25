@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_wakeupschedule.cs 38899 2019-12-20 17:21:03Z mvuilleu $
+ *  $Id: yocto_wakeupschedule.cs 48183 2022-01-20 10:26:11Z mvuilleu $
  *
  *  Implements yFindWakeUpSchedule(), the high-level API for WakeUpSchedule functions
  *
@@ -575,7 +575,7 @@ public class YWakeUpSchedule : YFunction
      * </summary>
      * <param name="func">
      *   a string that uniquely characterizes the wake up schedule, for instance
-     *   <c>YHUBGSM3.wakeUpSchedule1</c>.
+     *   <c>YHUBGSM5.wakeUpSchedule1</c>.
      * </param>
      * <returns>
      *   a <c>YWakeUpSchedule</c> object allowing you to drive the wake up schedule.
