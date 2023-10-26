@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_genericsensor.cs 49903 2022-05-25 14:18:36Z mvuilleu $
+ *  $Id: yocto_genericsensor.cs 56058 2023-08-15 07:38:35Z mvuilleu $
  *
  *  Implements yFindGenericSensor(), the high-level API for GenericSensor functions
  *
@@ -47,9 +47,9 @@ using System.Text;
 using YDEV_DESCR = System.Int32;
 using YFUN_DESCR = System.Int32;
 
- #pragma warning disable 1591
-    //--- (YGenericSensor return codes)
-    //--- (end of YGenericSensor return codes)
+#pragma warning disable 1591
+//--- (YGenericSensor return codes)
+//--- (end of YGenericSensor return codes)
 //--- (YGenericSensor dlldef)
 //--- (end of YGenericSensor dlldef)
 //--- (YGenericSensor yapiwrapper)
@@ -116,7 +116,7 @@ public class YGenericSensor : YSensor
     {
         if (json_val.has("signalValue"))
         {
-            _signalValue = Math.Round(json_val.getDouble("signalValue") * 1000.0 / 65536.0) / 1000.0;
+            _signalValue = Math.Round(json_val.getDouble("signalValue") / 65.536) / 1000.0;
         }
         if (json_val.has("signalUnit"))
         {
@@ -132,7 +132,7 @@ public class YGenericSensor : YSensor
         }
         if (json_val.has("signalBias"))
         {
-            _signalBias = Math.Round(json_val.getDouble("signalBias") * 1000.0 / 65536.0) / 1000.0;
+            _signalBias = Math.Round(json_val.getDouble("signalBias") / 65.536) / 1000.0;
         }
         if (json_val.has("signalSampling"))
         {
@@ -838,8 +838,7 @@ public class YGenericSensor : YSensor
         return FindGenericSensor(serial + "." + funcId);
     }
 
-
-
     //--- (end of YGenericSensor functions)
 }
 #pragma warning restore 1591
+

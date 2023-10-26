@@ -1,6 +1,6 @@
 /*********************************************************************
  *
- *  $Id: yocto_weighscale.cs 48017 2022-01-12 08:17:52Z seb $
+ *  $Id: yocto_weighscale.cs 56058 2023-08-15 07:38:35Z mvuilleu $
  *
  *  Implements yFindWeighScale(), the high-level API for WeighScale functions
  *
@@ -47,9 +47,9 @@ using System.Text;
 using YDEV_DESCR = System.Int32;
 using YFUN_DESCR = System.Int32;
 
- #pragma warning disable 1591
-    //--- (YWeighScale return codes)
-    //--- (end of YWeighScale return codes)
+#pragma warning disable 1591
+//--- (YWeighScale return codes)
+//--- (end of YWeighScale return codes)
 //--- (YWeighScale dlldef)
 //--- (end of YWeighScale dlldef)
 //--- (YWeighScale yapiwrapper)
@@ -116,27 +116,27 @@ public class YWeighScale : YSensor
         }
         if (json_val.has("tempAvgAdaptRatio"))
         {
-            _tempAvgAdaptRatio = Math.Round(json_val.getDouble("tempAvgAdaptRatio") * 1000.0 / 65536.0) / 1000.0;
+            _tempAvgAdaptRatio = Math.Round(json_val.getDouble("tempAvgAdaptRatio") / 65.536) / 1000.0;
         }
         if (json_val.has("tempChgAdaptRatio"))
         {
-            _tempChgAdaptRatio = Math.Round(json_val.getDouble("tempChgAdaptRatio") * 1000.0 / 65536.0) / 1000.0;
+            _tempChgAdaptRatio = Math.Round(json_val.getDouble("tempChgAdaptRatio") / 65.536) / 1000.0;
         }
         if (json_val.has("compTempAvg"))
         {
-            _compTempAvg = Math.Round(json_val.getDouble("compTempAvg") * 1000.0 / 65536.0) / 1000.0;
+            _compTempAvg = Math.Round(json_val.getDouble("compTempAvg") / 65.536) / 1000.0;
         }
         if (json_val.has("compTempChg"))
         {
-            _compTempChg = Math.Round(json_val.getDouble("compTempChg") * 1000.0 / 65536.0) / 1000.0;
+            _compTempChg = Math.Round(json_val.getDouble("compTempChg") / 65.536) / 1000.0;
         }
         if (json_val.has("compensation"))
         {
-            _compensation = Math.Round(json_val.getDouble("compensation") * 1000.0 / 65536.0) / 1000.0;
+            _compensation = Math.Round(json_val.getDouble("compensation") / 65.536) / 1000.0;
         }
         if (json_val.has("zeroTracking"))
         {
-            _zeroTracking = Math.Round(json_val.getDouble("zeroTracking") * 1000.0 / 65536.0) / 1000.0;
+            _zeroTracking = Math.Round(json_val.getDouble("zeroTracking") / 65.536) / 1000.0;
         }
         if (json_val.has("command"))
         {
@@ -1176,8 +1176,7 @@ public class YWeighScale : YSensor
         return FindWeighScale(serial + "." + funcId);
     }
 
-
-
     //--- (end of YWeighScale functions)
 }
 #pragma warning restore 1591
+

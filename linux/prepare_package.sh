@@ -5,7 +5,7 @@
 ## monodevelop  (sudo apt-get install monodevelop)
 
 
-sudo rm -rf yoctobridgecalibration
+rm -rf yoctobridgecalibration
 
 mkdir --mode=755 yoctobridgecalibration/
 mkdir --mode=755 yoctobridgecalibration/usr/
@@ -98,11 +98,5 @@ cp  ../bin/Release/YoctoBridgeCalibration.exe yoctobridgecalibration/usr/lib/Yoc
 chmod 755 yoctobridgecalibration/usr/lib/Yocto-BridgeCalibration/YoctoBridgeCalibration.exe
 #chmod 644 yoctobridgecalibration/usr/lib/Yocto-BridgeCalibration/YoctoBridgeCalibration.exe.config
 
-#set all file to root user
-sudo chown -R root:root yoctobridgecalibration
-
-
-dpkg-deb --build yoctobridgecalibration
-
-
+fakeroot dpkg-deb -Zxz --build yoctobridgecalibration
 lintian yoctobridgecalibration.deb
